@@ -1,2 +1,7 @@
 *.sh text eol=lf
 *.conf text eol=lf
+# Model artifacts under training/ go to Git LFS (run `git lfs install` once per clone).
+training/models/*.onnx  filter=lfs diff=lfs merge=lfs -text
+training/models/*.pt    filter=lfs diff=lfs merge=lfs -text
+training/models/*.tflite filter=lfs diff=lfs merge=lfs -text
+coprocessor/models/*    filter=lfs diff=lfs merge=lfs -text

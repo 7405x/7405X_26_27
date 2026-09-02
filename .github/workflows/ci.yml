@@ -1,0 +1,27 @@
+name: ci
+on:
+  push:
+    branches: [main, foundation]
+  pull_request:
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Generated protocol files are up to date
+        run: python protocol/generate.py --check
+      - name: Generated C header compiles
+        run: |
+          gcc -std=c11 -fsyntax-only -Wall -Werror protocol/generated/vaic_protocol.h
+          g++ -std=c++11 -x c++ -fsyntax-only -Wall -Werror protocol/generated/vaic_protocol.h
+      - name: Protocol tests
+        run: python -m unittest discover -s protocol/tests -v
+      - name: Coprocessor tests
+        run: python -m unittest discover -s coprocessor/tests -v
+      - name: Replay harness smoke test
+        run: python coprocessor/tools/replay.py --synthetic 100
+  # The V5 Brain build needs the VEXcode toolchain, which has no public CI image.
+  # Build v5/robot locally before merging changes under v5/ or protocol/.

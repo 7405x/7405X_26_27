@@ -1,0 +1,19 @@
+{
+  "_comment": "Copy to field.json (gitignored) and edit per robot. GPS/camera offsets for VEX's own code are set through the web dashboard and stored in JetsonExample/*_offsets.json.",
+  "robot": "robot_a",
+  "alliance": "red",
+  "log_dir": "logs",
+  "log_hz": 20,
+  "log_compress": false,
+  "camera_mount": {
+    "forward_m": 0.15,
+    "left_m": 0.0,
+    "up_m": 0.25,
+    "yaw_deg": 0.0
+  },
+  "strategy": {
+    "name": "nearest",
+    "class_ids": [0, 1],
+    "min_confidence": 0.5
+  }
+}

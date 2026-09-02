@@ -398,3 +398,25 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# ---- VAIC team additions ----
+# inference engines and exports (device specific, rebuilt on the Jetson)
+*.engine
+*.trt
+*.trt.build.log
+*.plan
+# SD card images
+*.img
+*.img.xz
+*.img.gz
+*.iso
+# world-state logs from matches / practice
+logs/
+*.jsonl
+*.jsonl.gz
+# per-robot / per-field config (copy from field.example.json)
+coprocessor/config/field.json
+# python
+.venv/
+venv/
+.pytest_cache/

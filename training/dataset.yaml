@@ -1,0 +1,7 @@
+# Pinned dataset description. Bump `version` every time labels change.
+version: 0
+source: "shared drive path or bucket URL here"
+image_size: [640, 480]
+names:
+  0: BallBlue     # placeholder from VEX's pushback model
+  1: BallRed      # replace with this season's classes

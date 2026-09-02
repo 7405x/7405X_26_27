@@ -1,3 +1,17 @@
+# VAIC 25/26 — team fork (7405X)
+
+Fork of VEX's VAIC system with team code beside it. **Start at [docs/SETUP.md](docs/SETUP.md).**
+
+- `protocol/` — versioned Jetson ⇄ V5 wire schema; generates both the Python and C sides
+- `coprocessor/` — Jetson code: world-state logging, offline replay, strategy
+- `v5/robot/` — Brain project derived from `ai_demo`, using the generated header
+- `training/` — dataset pin and model export
+- Hardware: Jetson Nano + RealSense. Pi 5 is not supported by our code.
+
+VEX's original README follows.
+
+---
+
 # The VEX AI Competition (VAIC) System
 
 ## [JetsonExample](./JetsonExample/README.md)
