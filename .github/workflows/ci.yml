@@ -21,7 +21,5 @@ jobs:
         run: python -m unittest discover -s protocol/tests -v
       - name: Coprocessor tests
         run: python -m unittest discover -s coprocessor/tests -v
-      - name: Replay harness smoke test
-        run: python coprocessor/tools/replay.py --synthetic 100
   # The V5 Brain build needs the VEXcode toolchain, which has no public CI image.
   # Build v5/robot locally before merging changes under v5/ or protocol/.

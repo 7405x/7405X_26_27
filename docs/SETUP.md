@@ -24,10 +24,10 @@ git lfs install
 python3 protocol/generate.py --check                 # should print nothing
 python3 -m unittest discover -s protocol/tests
 python3 -m unittest discover -s coprocessor/tests
-python3 coprocessor/tools/replay.py --synthetic 200 --verbose
+python3 coprocessor/tools/replay.py logs/<a recorded log>.jsonl --verbose
 ```
 
-Nothing above needs VEX libraries. This is where strategy work happens.
+Nothing above needs VEX libraries. Strategy work happens here, against logs recorded on the robot.
 
 ## Jetson Nano
 
@@ -38,7 +38,7 @@ Nothing above needs VEX libraries. This is where strategy work happens.
 4. Connect the Limelight and confirm `curl http://limelight.local:5807/results` returns JSON.
    Configure the Limelight's detector pipeline in its web UI.
 5. Run `python3 coprocessor/main.py`. The status line shows Limelight and Brain link state once a
-   second. To start on boot, adapt `JetsonExample/Scripts/service.sh` to point at this command.
+   second, and the debug dashboard is at `http://<jetson-ip>:8080/` ([DEBUG_UI.md](DEBUG_UI.md)). To start on boot, adapt `JetsonExample/Scripts/service.sh` to point at this command.
 6. Logs land in `logs/worldlog_<timestamp>.jsonl`. Copy them to a laptop after each session
    and replay them with `coprocessor/tools/replay.py`.
 

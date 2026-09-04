@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VAIC Debug</title>
+<style>
+  :root{--bg:#0f1115;--panel:#181b22;--line:#2a2f3a;--fg:#e6e8ee;--dim:#8b93a7;--ok:#3fb950;--bad:#f85149;--warn:#d29922;--acc:#58a6ff;--red:#ff6b6b;--blue:#5aa9ff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{display:flex;align-items:center;gap:16px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:2}
+  header h1{font-size:15px;margin:0;font-weight:600}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;background:#22262f;font-size:12px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+  .dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}.dot.warn{background:var(--warn)}
+  main{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:10px;padding:10px}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;min-width:0}
+  section h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
+  .cam{position:relative;background:#000;border-radius:6px;overflow:hidden;aspect-ratio:4/3}
+  .cam img,.cam canvas{position:absolute;inset:0;width:100%;height:100%}
+  .cam img{object-fit:fill}
+  .cam .nostream{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim)}
+  canvas#field{width:100%;aspect-ratio:1/1;background:#111520;border-radius:6px;display:block}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:500}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px}
+  .kv b{color:var(--dim);font-weight:500}
+  .big{font-size:22px;font-weight:600}
+  button,input,select{background:#22262f;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:inherit}
+  button:hover{border-color:var(--acc)}
+  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  .events{max-height:160px;overflow:auto}
+  .bar{height:6px;background:#22262f;border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
+  .span2{grid-column:span 2}
+  @media (max-width:760px){.span2{grid-column:span 1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>VAIC Debug <span id="robot" class="mono" style="color:var(--dim)"></span></h1>
+  <span class="pill"><i class="dot" id="d-server"></i>server</span>
+  <span class="pill"><i class="dot" id="d-ll"></i>limelight</span>
+  <span class="pill"><i class="dot" id="d-v5"></i>V5 brain</span>
+  <span class="pill"><i class="dot" id="d-gps"></i>GPS</span>
+  <span class="pill" id="mode">live</span>
+  <span style="flex:1"></span>
+  <span class="mono" id="fps"></span>
+</header>
+<main>
+  <section class="span2">
+    <h2>Camera
+      <span class="row">
+        <label><input type="checkbox" id="showBoxes" checked> boxes</label>
+        <button id="snap">Snapshot to Limelight</button>
+      </span>
+    </h2>
+    <div class="cam">
+      <img id="stream" alt="">
+      <canvas id="overlay" width="640" height="480"></canvas>
+      <div class="nostream" id="nostream">no stream</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Field <span class="mono" id="fieldInfo"></span></h2>
+    <canvas id="field" width="480" height="480"></canvas>
+  </section>
+
+  <section>
+    <h2>Detections <span id="detCount" class="mono"></span></h2>
+    <table><thead><tr><th>label</th><th>conf</th><th>x</th><th>y</th><th>range</th><th>bbox</th></tr></thead><tbody id="dets"></tbody></table>
+  </section>
+
+  <section>
+    <h2>Robot</h2>
+    <div class="kv">
+      <b>pose</b><span class="mono" id="pose"></span>
+      <b>heading</b><span class="mono" id="heading"></span>
+      <b>gps status</b><span class="mono" id="gpsStatus"></span>
+      <b>strategy</b><span class="mono" id="cmd"></span>
+      <b>frames</b><span class="mono" id="frames"></span>
+      <b>loop</b><span class="mono" id="timing"></span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Limelight / ML
+      <span class="row">
+        <select id="pipeSel"></select>
+        <button id="pipeGo">switch</button>
+      </span>
+    </h2>
+    <div class="kv" id="llKv"></div>
+    <div id="classHist" style="margin-top:8px"></div>
+  </section>
+
+  <section>
+    <h2>Jetson</h2>
+    <div class="kv" id="sysKv"></div>
+  </section>
+
+  <section>
+    <h2>Logs / replay
+      <span class="row">
+        <select id="logSel"></select>
+        <button id="logPlay">play</button>
+        <button id="logLive">live</button>
+      </span>
+    </h2>
+    <input type="range" id="scrub" min="0" max="0" value="0" style="width:100%">
+    <div class="mono" id="logInfo"></div>
+    <div class="events mono" id="events"></div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const FIELD_M = 3.6576;         // 12 ft VEX field
+let cfg = null, replay = null, classNames = {};
+
+async function getJSON(u, opt){ const r = await fetch(u, opt); return r.json(); }
+function dot(id, state){ const d = $(id); d.className = 'dot ' + (state===true?'ok':state===false?'bad':state||''); }
+function fmt(n, d=2){ return (n==null||isNaN(n)) ? '–' : Number(n).toFixed(d); }
+function colorFor(label){ const l=(label||'').toLowerCase(); return l.includes('red')?'var(--red)':l.includes('blue')?'var(--blue)':'#ffd166'; }
+
+// ---------- config ----------
+async function loadConfig(){
+  cfg = await getJSON('/api/config');
+  $('#robot').textContent = cfg.robot || '';
+  for (const [k,v] of Object.entries(cfg.objects||{})) classNames[k]=v.label;
+  $('#stream').src = '/camera/stream';
+  $('#stream').onload = () => $('#nostream').hidden = true;
+  $('#stream').onerror = () => { $('#nostream').hidden = false; setTimeout(()=>{ $('#stream').src='/camera/stream?'+Date.now(); }, 3000); };
+  const sel = $('#pipeSel'); sel.innerHTML='';
+  for (let i=0;i<10;i++){ const o=document.createElement('option'); o.value=i; o.textContent='pipeline '+i; sel.appendChild(o); }
+}
+
+// ---------- rendering ----------
+function drawOverlay(world, raw){
+  const c = $('#overlay'), ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  if(!$('#showBoxes').checked || !world) return;
+  ctx.lineWidth = 2; ctx.font = '13px system-ui';
+  for (const o of world.objects){
+    const [x,y,w,h] = o.bbox; ctx.strokeStyle = colorFor(o.label);
+    ctx.strokeRect(x-w/2, y-h/2, w, h);
+    const t = `${o.label} ${Math.round(o.confidence*100)}% ${fmt(o.depth,1)}m`;
+    const tw = ctx.measureText(t).width+6;
+    ctx.fillStyle='rgba(0,0,0,.65)'; ctx.fillRect(x-w/2, y-h/2-16, tw, 16);
+    ctx.fillStyle='#fff'; ctx.fillText(t, x-w/2+3, y-h/2-4);
+  }
+  ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.beginPath(); ctx.moveTo(c.width/2,0); ctx.lineTo(c.width/2,c.height); ctx.moveTo(0,c.height/2); ctx.lineTo(c.width,c.height/2); ctx.stroke();
+}
+
+function drawField(world, trail){
+  const c = $('#field'), ctx = c.getContext('2d'), S = c.width, m2p = S/FIELD_M;
+  const P = (x,y)=>[S/2 + x*m2p, S/2 - y*m2p];   // +Y up on screen, compass heading 0 = up
+  ctx.clearRect(0,0,S,S);
+  ctx.strokeStyle='#26304a'; ctx.lineWidth=1;
+  for(let i=0;i<=6;i++){ const p=i*S/6; ctx.beginPath(); ctx.moveTo(p,0); ctx.lineTo(p,S); ctx.moveTo(0,p); ctx.lineTo(S,p); ctx.stroke(); }
+  ctx.strokeStyle='#3a4560'; ctx.strokeRect(0.5,0.5,S-1,S-1);
+  if (trail && trail.length>1){ ctx.strokeStyle='rgba(88,166,255,.5)'; ctx.beginPath(); trail.forEach((t,i)=>{ const [x,y]=P(t[1],t[2]); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); }
+  if(!world) return;
+  for (const o of world.objects){ const [x,y]=P(o.x,o.y); ctx.fillStyle=colorFor(o.label); ctx.beginPath(); ctx.arc(x,y,5,0,7); ctx.fill(); }
+  const cmd = lastCmd; if (cmd && cmd.target){ const [x,y]=P(cmd.target[0],cmd.target[1]); ctx.strokeStyle='#ffd166'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,10,0,7); ctx.stroke(); const [rx,ry]=P(world.pose.x,world.pose.y); ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(x,y); ctx.stroke(); ctx.setLineDash([]); }
+  const [rx,ry]=P(world.pose.x,world.pose.y), h=world.pose.heading*Math.PI/180;
+  ctx.save(); ctx.translate(rx,ry); ctx.rotate(h);
+  ctx.fillStyle = world.pose.status&1 ? '#58a6ff' : '#666'; ctx.strokeStyle='#fff';
+  const r=0.18*m2p; ctx.fillRect(-r,-r,2*r,2*r); ctx.strokeRect(-r,-r,2*r,2*r);
+  ctx.beginPath(); ctx.moveTo(0,-r); ctx.lineTo(0,-r-12); ctx.stroke();
+  if (cfg && cfg.camera && cfg.camera.hfov_deg){ const f=cfg.camera.hfov_deg/2*Math.PI/180; ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.sin(-f)*2*m2p,-Math.cos(f)*2*m2p); ctx.moveTo(0,0); ctx.lineTo(Math.sin(f)*2*m2p,-Math.cos(f)*2*m2p); ctx.stroke(); }
+  ctx.restore();
+}
+
+let lastCmd=null, lastT=0, fpsEma=0;
+function render(s){
+  const w = s.world; lastCmd = s.command;
+  $('#mode').textContent = s.mode;
+  dot('#d-server', true);
+  dot('#d-ll', s.links.limelight); dot('#d-v5', s.links.v5); dot('#d-gps', w ? !!(w.pose.status&1) : null);
+  if (w){
+    if (lastT && w.t>lastT){ const f=1/(w.t-lastT); fpsEma = fpsEma? fpsEma*0.9+f*0.1 : f; }
+    lastT = w.t; $('#fps').textContent = fpsEma? fmt(fpsEma,1)+' fps' : '';
+    $('#pose').textContent = `${fmt(w.pose.x)}, ${fmt(w.pose.y)} m`;
+    $('#heading').textContent = fmt(w.pose.heading,1)+'°';
+    $('#gpsStatus').textContent = '0x'+(w.pose.status>>>0).toString(16) + (w.pose.status&1?' connected':' NO FIX') + (w.pose.status&0x100000?' (odom)':'');
+    $('#frames').textContent = s.frames;
+    $('#detCount').textContent = w.objects.length;
+    $('#dets').innerHTML = w.objects.map(o=>`<tr><td style="color:${colorFor(o.label)}">${o.label}</td><td>${Math.round(o.confidence*100)}%</td><td>${fmt(o.x)}</td><td>${fmt(o.y)}</td><td>${fmt(o.depth)}</td><td class="mono">${o.bbox.join(',')}</td></tr>`).join('');
+    const hist={}; for(const o of w.objects) hist[o.label]=(hist[o.label]||0)+1;
+    $('#classHist').innerHTML = Object.entries(hist).map(([k,v])=>`<div class="row"><span style="width:90px;color:${colorFor(k)}">${k}</span><div class="bar" style="flex:1"><i style="width:${Math.min(100,v*10)}%;background:${colorFor(k)}"></i></div><span>${v}</span></div>`).join('') || '<span style="color:var(--dim)">no detections</span>';
+  }
+  $('#cmd').textContent = s.command ? `${s.command.kind} ${s.command.target?('→ '+s.command.target.map(v=>fmt(v)).join(', ')):''} ${s.command.note||''}` : '–';
+  $('#timing').textContent = Object.entries(s.timing||{}).map(([k,v])=>`${k} ${fmt(v*1000,1)}ms`).join('  ');
+  $('#events').innerHTML = (s.events||[]).slice().reverse().map(e=>`<div>${new Date(e[0]*1000).toLocaleTimeString()} ${e[1]}</div>`).join('');
+  drawOverlay(w, s.raw_detections); drawField(w, s.trail);
+}
+
+// ---------- pollers ----------
+async function pollState(){
+  if (replay) return;
+  try { render(await getJSON('/api/state')); } catch(e){ dot('#d-server', false); }
+}
+async function pollLimelight(){
+  try {
+    const r = await getJSON('/api/limelight/status'); const d = r.ok ? r.data : null;
+    const kv = $('#llKv');
+    if (!d){ kv.innerHTML = `<b>status</b><span style="color:var(--bad)">${r.error||'unreachable'}</span>`; return; }
+    const pick = ['pipelineIndex','pipelineType','fps','cpu','temp','ram','hwType','name','snapshotMode','interfaces'];
+    const rows = []; for (const k of pick) if (k in d) rows.push(`<b>${k}</b><span class="mono">${typeof d[k]==='object'?JSON.stringify(d[k]):d[k]}</span>`);
+    for (const [k,v] of Object.entries(d)) if(!pick.includes(k) && typeof v!=='object') rows.push(`<b>${k}</b><span class="mono">${v}</span>`);
+    kv.innerHTML = rows.join('');
+    if ('pipelineIndex' in d) $('#pipeSel').value = d.pipelineIndex;
+  } catch(e){}
+}
+async function pollSystem(){
+  try {
+    const s = await getJSON('/api/system'); const rows=[];
+    for (const [k,v] of Object.entries(s.temps||{})) rows.push(`<b>${k}</b><span class="mono">${v} °C</span>`);
+    if (s.load) rows.push(`<b>load</b><span class="mono">${s.load.map(v=>fmt(v,2)).join(' ')} / ${s.cpus} cpus</span>`);
+    if (s.mem_mb && s.mem_mb.MemTotal) rows.push(`<b>memory</b><span class="mono">${s.mem_mb.MemTotal-s.mem_mb.MemAvailable} / ${s.mem_mb.MemTotal} MB</span>`);
+    $('#sysKv').innerHTML = rows.join('') || '<b>info</b><span>n/a (not on Jetson)</span>';
+  } catch(e){}
+}
+async function pollLogs(){
+  try {
+    const logs = await getJSON('/api/logs'); const sel=$('#logSel'); const cur=sel.value; sel.innerHTML='';
+    for (const l of logs){ const o=document.createElement('option'); o.value=l.name; o.textContent=`${l.name} (${Math.round(l.bytes/1024)} KB)`; sel.appendChild(o); }
+    if (cur) sel.value=cur;
+  } catch(e){}
+}
+
+// ---------- replay ----------
+$('#logPlay').onclick = async () => {
+  const name = $('#logSel').value; if(!name) return;
+  const first = await getJSON(`/api/logs/${encodeURIComponent(name)}?from=0&count=2000`);
+  replay = {name, frames:first.frames, total:first.total, i:0, timer:null};
+  while (replay.frames.length < replay.total){ const more = await getJSON(`/api/logs/${encodeURIComponent(name)}?from=${replay.frames.length}&count=2000`); if(!more.frames.length) break; replay.frames.push(...more.frames); }
+  $('#scrub').max = replay.frames.length-1; $('#mode').textContent='replay';
+  step();
+};
+function step(){
+  if(!replay) return; const f = replay.frames[replay.i]; if(!f){ return; }
+  const trail = replay.frames.slice(Math.max(0,replay.i-300), replay.i+1).map(x=>[x.t,x.pose.x,x.pose.y,x.pose.heading]);
+  render({world:f, command:null, raw_detections:[], links:{}, timing:{}, trail, events:[], frames:replay.i, mode:'replay '+replay.name});
+  $('#scrub').value = replay.i; $('#logInfo').textContent = `${replay.i+1}/${replay.frames.length}  t=${fmt(f.t-replay.frames[0].t,2)}s`;
+  const next = replay.frames[replay.i+1]; if(!next) return;
+  replay.i++; replay.timer = setTimeout(step, Math.min(500, Math.max(10, (next.t-f.t)*1000)));
+}
+$('#scrub').oninput = e => { if(!replay) return; clearTimeout(replay.timer); replay.i = +e.target.value; step(); };
+$('#logLive').onclick = () => { if(replay) clearTimeout(replay.timer); replay=null; $('#logInfo').textContent=''; };
+
+// ---------- controls ----------
+$('#pipeGo').onclick = async () => { await fetch(`/api/limelight/pipeline?index=${$('#pipeSel').value}`, {method:'POST'}); pollLimelight(); };
+$('#snap').onclick = async () => { const name = 'snap_'+new Date().toISOString().replace(/[:.]/g,'-'); const r = await getJSON(`/api/limelight/snapshot?name=${name}`, {method:'POST'}); if(!r.ok) alert('snapshot failed: '+r.error); };
+
+loadConfig().then(()=>{ pollState(); pollLimelight(); pollSystem(); pollLogs(); });
+setInterval(pollState, 100); setInterval(pollLimelight, 2000); setInterval(pollSystem, 3000); setInterval(pollLogs, 10000);
+</script>
+</body>
+</html>

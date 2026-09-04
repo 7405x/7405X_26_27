@@ -9,11 +9,13 @@ from typing import Optional
 import vaic_protocol as P
 
 from . import ROOT
+from .debugstate import DebugState
 from .logger import WorldLogger
 from .perception import CameraMount, LimelightSource, pixel_to_angles, project_to_field
 from .strategy import NearestObjectStrategy
 from .v5link import V5Link
 from .world import Pose, WorldObject, WorldState
+from .webui import WebUI
 
 
 class PoseSource:
@@ -67,6 +69,8 @@ class LimelightApp:
         s = cfg.get("strategy", {})
         self.strategy = NearestObjectStrategy(s.get("class_ids", [0]), s.get("min_confidence", 0.5))
         self.strategy.reset()
+        self.debug = DebugState()
+        self.webui = WebUI(self.debug, cfg, port=cfg.get("webui_port", 8080)) if cfg.get("webui", True) else None
 
     def build_world(self, dets, pose: Pose, t: float) -> WorldState:
         objs = []
@@ -83,17 +87,25 @@ class LimelightApp:
 
     def run(self) -> None:
         self.link.start()
+        if self.webui:
+            self.webui.start()
         print("Logging world state to", self.logger.path)
         last_print = 0.0
         try:
             while True:
                 t0 = time.time()
                 dets = self.source.fetch()
+                t1 = time.time()
                 pose = self.pose_source.current()
                 world = self.build_world(dets, pose, t0)
                 self.logger.log(world)
                 self.link.set_record(world.to_ai_record())
                 cmd = self.strategy.update(world)
+                self.debug.update(world, cmd, [d.__dict__ for d in dets],
+                                  links={"limelight": self.source.connected, "v5": self.link.connected,
+                                         "v5_requests": self.link.requests, "odom_packets": self.link.odom_packets,
+                                         "limelight_errors": self.source.errors},
+                                  timing={"fetch": t1 - t0, "process": time.time() - t1})
                 if t0 - last_print > 1.0:
                     last_print = t0
                     print(f"[ll {'ok' if self.source.connected else 'DOWN'}] [v5 {'ok' if self.link.connected else 'DOWN'}] "
@@ -104,4 +116,6 @@ class LimelightApp:
                     time.sleep(dt)
         finally:
             self.link.stop()
+            if self.webui:
+                self.webui.stop()
             self.logger.close()

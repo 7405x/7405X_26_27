@@ -6,6 +6,7 @@ Fork of VEX's VAIC system with team code beside it. **Start at [docs/SETUP.md](d
 - `coprocessor/` — Jetson code: Limelight perception, GPS/odometry pose, world-state logging, offline replay, strategy
 - `v5/robot/` — Brain project derived from `ai_demo`, using the generated header
 - `training/` — dataset pin and model export
+- Debug dashboard on the Jetson at port 8080, see [docs/DEBUG_UI.md](docs/DEBUG_UI.md)
 - Hardware: OKdo Nano C100 + Limelight camera + V5 GPS per robot. See [docs/HARDWARE.md](docs/HARDWARE.md).
 
 VEX's original README follows.

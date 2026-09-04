@@ -7,6 +7,7 @@
     "type": "limelight",
     "host": "limelight.local",
     "port": 5807,
+    "stream_port": 5800,
     "poll_hz": 30,
     "hfov_deg": 62.5,
     "vfov_deg": 48.9,
@@ -25,6 +26,8 @@
     "1": {"label": "BallRed",  "height_m": 0.04}
   },
   "localization": {"gps": true, "odom_fallback": true},
+  "webui": true,
+  "webui_port": 8080,
   "log_dir": "logs",
   "log_hz": 20,
   "log_compress": false,
