@@ -1,7 +1,8 @@
 # Setup
 
-Read this once end to end. Hardware decision: **Jetson Nano** with an Intel RealSense camera.
-The Raspberry Pi 5 path in `JetsonImages/` exists but we do not maintain it.
+Read this once end to end. Hardware: **OKdo Nano C100 (Jetson Nano) + Limelight camera + V5 GPS**,
+one set per robot; the NVIDIA dev kit is the bench board. See [HARDWARE.md](HARDWARE.md).
+The Raspberry Pi 5 and RealSense paths exist in VEX's code but we do not maintain them.
 
 ## Repo layout
 
@@ -9,7 +10,7 @@ The Raspberry Pi 5 path in `JetsonImages/` exists but we do not maintain it.
 |---|---|---|
 | `JetsonExample/`, `V5Example/`, `JetsonImages/`, `JetsonWebDashboard/` | VEX | Upstream code. Do not edit; pull fixes with `git fetch upstream && git merge upstream/main`. |
 | `protocol/` | us | `schema.py` is the wire contract. `generate.py` writes the Python module and C header. |
-| `coprocessor/` | us | Python that runs on the Jetson. `main.py` wraps VEX's pipeline and adds logging + strategy. |
+| `coprocessor/` | us | Python that runs on the Jetson. `main.py` polls the Limelight, reads GPS/odometry, projects to the field, logs, runs strategy, serves the Brain. |
 | `v5/robot/` | us | Copy of `ai_demo` that includes the generated header. Build with VEXcode. |
 | `training/` | us | Dataset pin, export script, LFS-tracked model files. |
 | `docs/` | us | This file and design notes. |
@@ -32,12 +33,12 @@ Nothing above needs VEX libraries. This is where strategy work happens.
 
 1. Flash the image following `JetsonImages/README.md`.
 2. Clone this repo onto the Jetson (same commands as above, plus `git lfs pull`).
-3. Copy `coprocessor/config/field.example.json` to `coprocessor/config/field.json` and set `robot`.
-4. Set GPS and camera offsets through the web dashboard as VEX documents; they save to
-   `JetsonExample/*_offsets.json`, which is gitignored.
-5. Run our entrypoint instead of VEX's: edit the `PYTHON_PROGRAM` line in a copy of
-   `JetsonExample/Scripts/run.sh` (or the systemd service) to point at `coprocessor/main.py`.
-   First launch builds the TensorRT engine and takes several minutes.
+3. Set the hostname to `robot_a` or `robot_b`, then copy `coprocessor/config/robot_a.example.json`
+   to `coprocessor/config/robot_a.json` (or `robot_b`) and measure in the camera mount values.
+4. Connect the Limelight and confirm `curl http://limelight.local:5807/results` returns JSON.
+   Configure the Limelight's detector pipeline in its web UI.
+5. Run `python3 coprocessor/main.py`. The status line shows Limelight and Brain link state once a
+   second. To start on boot, adapt `JetsonExample/Scripts/service.sh` to point at this command.
 6. Logs land in `logs/worldlog_<timestamp>.jsonl`. Copy them to a laptop after each session
    and replay them with `coprocessor/tools/replay.py`.
 
@@ -46,6 +47,11 @@ Nothing above needs VEX libraries. This is where strategy work happens.
 1. Open `v5/robot` in VS Code with the VEX extension, or `make` with the VEXcode toolchain.
 2. Always run `python3 protocol/generate.py` first; the header in `v5/robot/include` is generated.
 3. Set drivetrain ports in `include/robot-config.h`.
+
+## Sending Brain odometry to the Jetson
+
+Once the Brain has an encoder-based pose, set `VAIC_SEND_ODOM` to 1 in `v5/robot/src/main.cpp`
+and feed your estimate to `vaic::send_odom()`. The Jetson falls back to it when the GPS has no fix.
 
 ## Changing the wire protocol
 

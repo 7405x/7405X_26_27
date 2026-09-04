@@ -10,6 +10,10 @@
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // ---- END VEXCODE CONFIGURED DEVICES ----
 #include "ai_functions.h"
+#include "vaic_odom.h"
+
+// Set to 1 once you have encoder odometry to send; see vaic_odom.h
+#define VAIC_SEND_ODOM 0
 
 using namespace vex;
 
@@ -161,6 +165,11 @@ int main() {
       // request new data    
       // NOTE: This request should only happen in a single task.    
       jetson_comms.request_map();
+
+#if VAIC_SEND_ODOM
+      // TODO: replace local_map.pos with your own encoder-based pose estimate.
+      vaic::send_odom(Brain.Timer.system(), local_map.pos.x, local_map.pos.y, local_map.pos.az, ODOM_STATUS_VALID);
+#endif
 
       // Allow other tasks to run
       this_thread::sleep_for(loop_time);

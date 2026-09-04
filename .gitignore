@@ -414,8 +414,9 @@ FodyWeavers.xsd
 logs/
 *.jsonl
 *.jsonl.gz
-# per-robot / per-field config (copy from field.example.json)
-coprocessor/config/field.json
+# per-robot config (copy from robot_*.example.json); only examples are committed
+coprocessor/config/*.json
+!coprocessor/config/*.example.json
 # python
 .venv/
 venv/

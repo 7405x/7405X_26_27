@@ -54,6 +54,8 @@ def gen_c() -> str:
     L.append("")
     for k, v in S.POS_STATUS_FLAGS.items():
         L.append(f"#define {k:<28}0x{v:08X}")
+    for k, v in S.ODOM_STATUS_FLAGS.items():
+        L.append(f"#define {k:<28}0x{v:08X}")
     L.append("")
     for s in S.STRUCTS:
         L.append(f"/** {s.comment} */")
@@ -106,6 +108,8 @@ def gen_py() -> str:
         L.append(f"{k} = 0x{v:04X}  # {c}")
     L.append("")
     for k, v in S.POS_STATUS_FLAGS.items():
+        L.append(f"{k} = 0x{v:08X}")
+    for k, v in S.ODOM_STATUS_FLAGS.items():
         L.append(f"{k} = 0x{v:08X}")
     L.append("")
 

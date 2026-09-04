@@ -1,0 +1,32 @@
+{
+  "_comment": "Copy to robot_a.json (or <hostname>.json) on that robot's board and edit. Heights are object CENTER above the tiles.",
+  "robot": "robot_a",
+  "board": "okdo-c100 #1",
+  "alliance": "red",
+  "camera": {
+    "type": "limelight",
+    "host": "limelight.local",
+    "port": 5807,
+    "poll_hz": 30,
+    "hfov_deg": 62.5,
+    "vfov_deg": 48.9,
+    "width": 640,
+    "height": 480,
+    "mount": {
+      "forward_m": 0.15,
+      "right_m": 0.0,
+      "height_m": 0.30,
+      "pitch_deg": -15.0,
+      "yaw_deg": 0.0
+    }
+  },
+  "objects": {
+    "0": {"label": "BallBlue", "height_m": 0.04},
+    "1": {"label": "BallRed",  "height_m": 0.04}
+  },
+  "localization": {"gps": true, "odom_fallback": true},
+  "log_dir": "logs",
+  "log_hz": 20,
+  "log_compress": false,
+  "strategy": {"name": "nearest", "class_ids": [0, 1], "min_confidence": 0.5}
+}

@@ -85,3 +85,14 @@ class LayoutTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class OdomTests(unittest.TestCase):
+    def test_odom_roundtrip(self):
+        o = P.ODOM_RECORD(t_ms=123456, x=0.5, y=-0.25, heading=270.0, status=P.ODOM_STATUS_VALID)
+        pkt = P.build_packet(o.pack(), P.PACKET_TYPE_ODOM)
+        self.assertEqual(len(pkt), P.HEADER_SIZE + P.ODOM_RECORD.SIZE)
+        ptype, payload = P.parse_packet(pkt)
+        self.assertEqual(ptype, P.PACKET_TYPE_ODOM)
+        self.assertEqual(P.ODOM_RECORD.unpack(payload), o)
+        self.assertEqual(P.PROTOCOL_VERSION, 2)

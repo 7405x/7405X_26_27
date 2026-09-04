@@ -14,7 +14,7 @@ The generator embeds a layout hash in both outputs; tests fail if they drift.
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 2
 MAX_DETECTIONS = 50
 SYNC_BYTES = (0xAA, 0x55, 0xCC, 0x33)
 BAUD = 115200
@@ -24,7 +24,8 @@ CRC32_POLY = 0x04C11DB7  # non-reflected, init 0, no final xor (matches VEX)
 
 # Packet types (16-bit `type` field in the header). Never reuse a value.
 PACKET_TYPES = {
-    "PACKET_TYPE_AI_RECORD": (0x0001, "AI_RECORD payload, layout v1"),
+    "PACKET_TYPE_AI_RECORD": (0x0001, "Jetson -> Brain: AI_RECORD payload, layout v1"),
+    "PACKET_TYPE_ODOM":      (0x0002, "Brain -> Jetson: ODOM_RECORD from encoder odometry"),
 }
 
 # Scalar types: name -> (C type, struct format char, size)
@@ -91,7 +92,15 @@ AI_RECORD = Struct("AI_RECORD", [
     Field("detections", "DETECTION_OBJECT", array=MAX_DETECTIONS),
 ], "Everything the coprocessor sends per frame", count_field="detectionCount")
 
-STRUCTS: List[Struct] = [POS_RECORD, IMAGE_DETECTION, MAP_DETECTION, DETECTION_OBJECT, AI_RECORD]
+ODOM_RECORD = Struct("ODOM_RECORD", [
+    Field("t_ms", "u32", "Brain uptime in ms when the estimate was made"),
+    Field("x", "f32", "Field X in meters (same frame as POS_RECORD)"),
+    Field("y", "f32", "Field Y in meters"),
+    Field("heading", "f32", "Compass heading in degrees, 0 = +Y, 90 = +X"),
+    Field("status", "i32", "0 = ok; ODOM_STATUS_* flags"),
+], "Brain-side pose from motor encoders, used when the GPS has no fix")
+
+STRUCTS: List[Struct] = [POS_RECORD, IMAGE_DETECTION, MAP_DETECTION, DETECTION_OBJECT, AI_RECORD, ODOM_RECORD]
 
 # GPS status flags (POS_RECORD.status), copied from VEX's V5Position.py
 POS_STATUS_FLAGS = {
@@ -106,6 +115,12 @@ POS_STATUS_FLAGS = {
     "POS_STATUS_POSJUMP":    0x00000100,
     "POS_STATUS_NOSOLUTION": 0x00000200,
     "POS_STATUS_KALMAN_EST": 0x00100000,
+}
+
+
+ODOM_STATUS_FLAGS = {
+    "ODOM_STATUS_VALID":  0x00000001,
+    "ODOM_STATUS_RESET":  0x00000002,  # pose was just re-seeded from GPS
 }
 
 
