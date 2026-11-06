@@ -108,6 +108,8 @@ void driverControlStep() {
     left  = applyCurve(applyDeadband(Controller1.Axis3.position()));
     right = applyCurve(applyDeadband(Controller1.Axis2.position()));
   } else {
+    // Split arcade: left stick vertical (Axis3) = forward/back,
+    // right stick horizontal (Axis1) = turn.
     double fwd  = applyCurve(applyDeadband(Controller1.Axis3.position()));
     double turn = applyCurve(applyDeadband(Controller1.Axis1.position()));
     left  = fwd + turn;

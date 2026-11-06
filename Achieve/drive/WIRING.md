@@ -2,7 +2,7 @@
 
 Plug each device into the port number listed. These match `include/robot-config.h`. If you have to use a different port, change it there too.
 
-"Front" means the side the robot drives toward when you push both sticks forward.
+"Front" means the side the robot drives toward when you push the left stick forward.
 
 ## Ports
 
@@ -35,7 +35,7 @@ Ports 7–9 and 11–21 are free.
 ## After wiring: check motor directions
 1. Put the robot on blocks so the wheels are off the ground.
 2. Download the code and start it with **driver control**.
-3. Push **both sticks forward**. Every wheel should spin forward.
+3. Push the **left stick forward**. Every wheel should spin forward. Then push the **right stick right**: the left wheels should spin forward and the right wheels backward, so the robot turns right.
 4. If one wheel spins **backward**, open `src/robot-config.cpp` and flip that motor's `true`/`false`.
 5. If one wheel **doesn't spin at all**, check its cable. The brain also shows a red "CHECK CABLES" warning at startup for any motor it can't find.
 

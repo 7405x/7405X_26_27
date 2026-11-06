@@ -1,6 +1,6 @@
 # 7405X Achieve Drive
 
-V5 C++ project for the VEX VS Code extension. It runs a 6-motor tank drive (3 motors per side) with an inertial sensor.
+V5 C++ project for the VEX VS Code extension. It runs a 6-motor drivetrain (3 motors per side), driven with split arcade controls, and uses an inertial sensor.
 
 ## Before the first run
 1. Open `include/robot-config.h` and set the motor ports, IMU port, cartridge, wheel size and gear ratio.
@@ -18,7 +18,8 @@ V5 C++ project for the VEX VS Code extension. It runs a 6-motor tank drive (3 mo
 ## Driver controls
 | Control | Does |
 |---|---|
-| Left / right stick | Tank drive (set `TANK_DRIVE = false` for arcade) |
+| Left stick up/down | Drive forward / backward |
+| Right stick left/right | Turn |
 | L1 | Slow mode on/off (40% speed, for lining up) |
 | X | Hold mode on/off (wheels lock when sticks are released, hard to push) |
 
