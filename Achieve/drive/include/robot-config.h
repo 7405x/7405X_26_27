@@ -6,13 +6,15 @@
 // ---------------- Ports ----------------
 // Left side motors. If a motor spins the wrong way, flip its "true/false"
 // in robot-config.cpp (that's the "reversed" flag).
-#define LEFT_FRONT_PORT  PORT1
-#define LEFT_MIDDLE_PORT PORT2
-#define LEFT_BACK_PORT   PORT3
+// (Ports were remapped because forward/back was inverted: the code had the
+// robot's back as its front, so left/right and front/back were swapped.)
+#define LEFT_FRONT_PORT  PORT6
+#define LEFT_MIDDLE_PORT PORT5
+#define LEFT_BACK_PORT   PORT4
 
-#define RIGHT_FRONT_PORT  PORT4
-#define RIGHT_MIDDLE_PORT PORT5
-#define RIGHT_BACK_PORT   PORT6
+#define RIGHT_FRONT_PORT  PORT3
+#define RIGHT_MIDDLE_PORT PORT2
+#define RIGHT_BACK_PORT   PORT1
 
 #define IMU_PORT PORT10
 
