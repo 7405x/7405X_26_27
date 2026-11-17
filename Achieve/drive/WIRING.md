@@ -8,12 +8,12 @@ Plug each device into the port number listed. These match `include/robot-config.
 
 | Port | Device | Where on the robot | Reversed in code? |
 |---|---|---|---|
-| 1 | Motor: left front | Left side, front | No |
-| 2 | Motor: left middle | Left side, middle | No |
-| 3 | Motor: left back | Left side, back | No |
-| 4 | Motor: right front | Right side, front | Yes |
-| 5 | Motor: right middle | Right side, middle | Yes |
-| 6 | Motor: right back | Right side, back | Yes |
+| 1 | Motor: right back | Right side, back | Yes |
+| 2 | Motor: right middle | Right side, middle | Yes |
+| 3 | Motor: right front | Right side, front | Yes |
+| 4 | Motor: left back | Left side, back | No |
+| 5 | Motor: left middle | Left side, middle | No |
+| 6 | Motor: left front | Left side, front | No |
 | 10 | Inertial sensor (IMU) | See below | - |
 | Any free port | Radio | See below | - |
 
