@@ -5,13 +5,14 @@
 #include "robot-config.h"
 #include "drive.h"
 #include "autons.h"
+#include "arm.h"
 
 // Runs once when the program starts, before the match begins.
 void pre_auton() {
   // Warn if a cable is loose before the match instead of finding out mid-match.
   char missing[32];
   int unplugged = countUnpluggedMotors(missing, sizeof(missing));
-  if (unplugged > 0 || !IMU.installed()) {
+  if (unplugged > 0 || !IMU.installed() || !arm.installed()) {
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(red);
     Brain.Screen.setCursor(1, 1);
@@ -20,6 +21,8 @@ void pre_auton() {
     if (unplugged > 0) Brain.Screen.print("Motors not found: %s", missing);
     Brain.Screen.setCursor(3, 1);
     if (!IMU.installed()) Brain.Screen.print("IMU not found - auton turns won't work");
+    Brain.Screen.setCursor(4, 1);
+    if (!arm.installed()) Brain.Screen.print("Arm motor (port 16) not found");
     Brain.Screen.setPenColor(white);
     Controller1.rumble("---");
     wait(3, sec);
@@ -33,6 +36,7 @@ void pre_auton() {
   waitUntil(!IMU.isCalibrating());
 
   resetDriveEncoders();
+  armReset();  // the arm must be resting DOWN when the program starts
   static task odom(odometryTask);
   runAutonSelector();
 }
@@ -52,6 +56,8 @@ int controllerDisplayTask() {
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.print("%s %s", isSlowMode() ? "SLOW" : "FAST",
                              isHoldMode() ? "HOLD" : "COAST");
+    Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.print("Arm: %.0f deg", armPosition());
     // The controller screen is slow; updating too often causes lag.
     wait(500, msec);
   }
@@ -79,6 +85,7 @@ void usercontrol() {
 
   while (true) {
     driverControlStep();
+    armControlStep();
 
     // Buzz once when it's time to head back to the loader to park.
     // (In Solo Driving there is no parking bonus - just ignore the buzz.)

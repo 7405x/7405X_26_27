@@ -13,6 +13,8 @@ V5 C++ project for the VEX VS Code extension. It runs a 6-motor drivetrain (3 mo
 | `src/main.cpp` | Competition setup: pre-auton, autonomous and driver control |
 | `src/drive.cpp` | Driver control plus PID `driveDistance` / `turnToHeading` |
 | `src/autons.cpp` | Auton routines and the brain-screen selector |
+| `src/arm.cpp` | Arm control (R1/R2) and `armTo()` for autons |
+| `include/arm.h` | Arm positions (down / carry / score) to measure and fill in |
 | `include/robot-config.h` | Ports and robot measurements |
 
 ## Driver controls
@@ -20,6 +22,8 @@ V5 C++ project for the VEX VS Code extension. It runs a 6-motor drivetrain (3 mo
 |---|---|
 | Left stick up/down | Drive forward / backward |
 | Right stick left/right | Turn |
+| R1 (hold) | Arm up |
+| R2 (hold) | Arm down |
 | L1 | Slow mode on/off (40% speed, for lining up) |
 | X | Hold mode on/off (wheels lock when sticks are released, hard to push) |
 

@@ -15,9 +15,16 @@ Plug each device into the port number listed. These match `include/robot-config.
 | 5 | Motor: right middle | Right side, middle | Yes |
 | 6 | Motor: right back | Right side, back | Yes |
 | 10 | Inertial sensor (IMU) | See below | - |
+| 16 | Motor: arm | Rotates the arm | No (flip `ARM_REVERSED` if R1 moves it down) |
 | Any free port | Radio | See below | - |
 
-Ports 7–9 and 11–21 are free.
+Ports 7–9, 11–15 and 17–21 are free.
+
+**Motor power:** 7 × 11W = 77W of the 99W limit.
+
+## Arm
+- **Start every program with the arm resting all the way down.** The code treats wherever the arm is at startup as "down" (0°).
+- Check the cartridge color on the arm motor and set `ARM_CARTRIDGE` in `include/robot-config.h` (currently guessed green, `ratio18_1`).
 
 ## Inertial sensor (IMU)
 - Mount it **flat** (level with the floor) and as close to the middle of the robot as you can.

@@ -16,6 +16,14 @@
 
 #define IMU_PORT PORT10
 
+// Arm motor (rotates the arm that scoops and scores).
+#define ARM_PORT PORT16
+// Cartridge in the arm motor. Arms usually use green (ratio18_1) or red
+// (ratio36_1) for more torque. CHECK the cap color on the motor.
+#define ARM_CARTRIDGE ratio18_1
+// Flip this if pressing R1 (arm up) makes the arm go down.
+const bool ARM_REVERSED = false;
+
 // ---------------- Drive geometry ----------------
 // Cartridge inside the motors: ratio6_1 = blue (600rpm),
 // ratio18_1 = green (200rpm), ratio36_1 = red (100rpm).
@@ -47,3 +55,4 @@ extern motor rightFront, rightMiddle, rightBack;
 extern motor_group leftDrive;
 extern motor_group rightDrive;
 extern inertial IMU;
+extern motor arm;
