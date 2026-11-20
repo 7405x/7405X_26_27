@@ -13,7 +13,7 @@ void pre_auton() {
   // Warn if a cable is loose before the match instead of finding out mid-match.
   char missing[32];
   int unplugged = countUnpluggedMotors(missing, sizeof(missing));
-  if (unplugged > 0 || !IMU.installed() || !lift.installed() || !claw.installed()) {
+  if (unplugged > 0 || !IMU.installed()) {
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(red);
     Brain.Screen.setCursor(1, 1);
@@ -22,10 +22,6 @@ void pre_auton() {
     if (unplugged > 0) Brain.Screen.print("Motors not found: %s", missing);
     Brain.Screen.setCursor(3, 1);
     if (!IMU.installed()) Brain.Screen.print("IMU not found - auton turns won't work");
-    Brain.Screen.setCursor(4, 1);
-    if (!lift.installed()) Brain.Screen.print("Lift motor (port 16) not found");
-    Brain.Screen.setCursor(5, 1);
-    if (!claw.installed()) Brain.Screen.print("Claw motor (port 17) not found");
     Brain.Screen.setPenColor(white);
     Controller1.rumble("---");
     wait(3, sec);
@@ -56,7 +52,7 @@ int controllerDisplayTask() {
     Controller1.Screen.clearScreen();
     Controller1.Screen.setCursor(1, 1);
     Controller1.Screen.print("Batt %d%%  Mtr %.0fC", Brain.Battery.capacity(),
-                             hottestDriveMotorC());
+                             hottestMotorC());
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.print("%s %s", isSlowMode() ? "SLOW" : "FAST",
                              isHoldMode() ? "HOLD" : "COAST");
@@ -74,6 +70,10 @@ int controllerDisplayTask() {
 void autonomous() {
   leftDrive.setStopping(brake);
   rightDrive.setStopping(brake);
+  // A motor only holds after it's told to stop. Without this the lift
+  // isn't powered during auton and can flop down when the robot moves.
+  lift.stop(hold);
+  if (!clawIsClosed()) claw.stop(hold);
   runSelectedAuton();
 }
 

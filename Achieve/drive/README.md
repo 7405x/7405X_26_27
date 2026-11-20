@@ -32,7 +32,7 @@ Full driver guide (buttons, buzzes, controller screen, pre-match checklist): [DR
 | L1 | Slow mode on/off (40% speed, for lining up) |
 | X | Hold mode on/off (wheels lock when sticks are released, hard to push) |
 
-The controller screen shows battery %, hottest drive motor temperature, and the current modes. V5 motors lose power above about 55°C.
+The controller screen shows battery %, hottest motor temperature (drive, lift or claw), and the current modes. V5 motors lose power above about 55°C.
 The controller buzzes 15 seconds before the end of an alliance match. That's the cue to drive back to your alliance loader: a robot touching it when the match ends scores 21 points.
 At startup the brain checks that all 8 motors and the IMU are plugged in, and shows a red warning if one isn't.
 

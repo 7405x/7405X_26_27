@@ -116,8 +116,14 @@ void driverControlStep() {
     right = fwd - turn;
   }
 
-  left  = clampD(left,  -100, 100);
-  right = clampD(right, -100, 100);
+  // If forward + turn adds up past 100%, scale BOTH sides down together
+  // instead of clipping one. Clipping would cut the turn, so the robot
+  // goes straighter than the driver asked at full stick.
+  double biggest = fmax(fabs(left), fabs(right));
+  if (biggest > 100) {
+    left  *= 100 / biggest;
+    right *= 100 / biggest;
+  }
   if (slowMode) {
     left  *= SLOW_MODE_SCALE;
     right *= SLOW_MODE_SCALE;
@@ -137,27 +143,30 @@ void driverControlStep() {
 // ---------------------------------------------------------------------------
 //  Health checks
 // ---------------------------------------------------------------------------
-static motor* allDriveMotors[] = {&leftFront, &leftMiddle, &leftBack,
-                                  &rightFront, &rightMiddle, &rightBack};
-static const char* allDriveNames[] = {"LF", "LM", "LB", "RF", "RM", "RB"};
+static motor* allMotors[] = {&leftFront, &leftMiddle, &leftBack,
+                             &rightFront, &rightMiddle, &rightBack,
+                             &lift, &claw};
+static const char* allMotorNames[] = {"LF", "LM", "LB", "RF", "RM", "RB",
+                                      "LIFT", "CLAW"};
+static const int NUM_MOTORS = sizeof(allMotors) / sizeof(allMotors[0]);
 
 int countUnpluggedMotors(char* namesOut, int outSize) {
   int count = 0;
   namesOut[0] = '\0';
-  for (int i = 0; i < 6; i++) {
-    if (!allDriveMotors[i]->installed()) {
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    if (!allMotors[i]->installed()) {
       count++;
-      strncat(namesOut, allDriveNames[i], outSize - strlen(namesOut) - 1);
+      strncat(namesOut, allMotorNames[i], outSize - strlen(namesOut) - 1);
       strncat(namesOut, " ", outSize - strlen(namesOut) - 1);
     }
   }
   return count;
 }
 
-double hottestDriveMotorC() {
+double hottestMotorC() {
   double hottest = 0;
-  for (int i = 0; i < 6; i++) {
-    double t = allDriveMotors[i]->temperature(celsius);
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    double t = allMotors[i]->temperature(celsius);
     if (t > hottest) hottest = t;
   }
   return hottest;

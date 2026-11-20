@@ -12,12 +12,12 @@ bool isSlowMode();
 bool isHoldMode();
 
 // ---------- Health checks ----------
-// Returns how many drive motors aren't detected, and writes their names
-// (e.g. "LF RB ") into namesOut.
+// Returns how many motors (drive, lift, claw) aren't detected, and writes
+// their names (e.g. "LF CLAW ") into namesOut.
 int countUnpluggedMotors(char* namesOut, int outSize);
-// Temperature of the hottest drive motor in Celsius. V5 motors start
-// cutting power at 55C.
-double hottestDriveMotorC();
+// Temperature of the hottest motor (drive, lift or claw) in Celsius.
+// V5 motors start cutting power at 55C.
+double hottestMotorC();
 
 // ---------- Autonomous moves ----------
 // Drive straight a distance in inches (negative = backward).

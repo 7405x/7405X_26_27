@@ -34,7 +34,7 @@ Lift 90  Claw SHUT
 ```
 
 - **Batt:** battery charge. Swap the battery before a match if it's low.
-- **Mtr:** hottest drive motor. Above about 55°C the motors lose power.
+- **Mtr:** hottest motor on the robot (drive, lift or claw). Above about 55°C motors lose power. If it climbs while the claw is shut, open the claw for a bit.
 - **FAST/SLOW** and **COAST/HOLD:** which modes are on.
 - **Lift:** lift angle in degrees. **Claw:** OPEN or SHUT.
 
