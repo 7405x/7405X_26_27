@@ -20,4 +20,5 @@ motor_group rightDrive = motor_group(rightFront, rightMiddle, rightBack);
 
 inertial IMU = inertial(IMU_PORT);
 
-motor arm = motor(ARM_PORT, ARM_CARTRIDGE, ARM_REVERSED);
+motor lift = motor(LIFT_PORT, LIFT_CARTRIDGE, LIFT_REVERSED);
+motor claw = motor(CLAW_PORT, CLAW_CARTRIDGE, CLAW_REVERSED);

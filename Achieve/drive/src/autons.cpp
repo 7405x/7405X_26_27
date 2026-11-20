@@ -153,9 +153,9 @@ static void pressToggler() {
 // 4 halfpins on 2 goals, which our partner would have to score), and it
 // makes yellow halfpins on our alliance goals worth points.
 //
-// The arm isn't used here: it should be resting down at the start (that's
-// where armReset() zeroes it) and it stays there. If it ever needs to be
-// tucked or raised in auton, add an armTo(...) at the top of the routine.
+// The lift isn't used here: it should be resting down at the start (that's
+// where liftReset() zeroes it) and it stays there. If it ever needs to be
+// tucked or raised in auton, add a liftTo(...) at the top of the routine.
 //
 // UNTESTED PATH - walk it on the real field first. The lane between the red
 // goal and the slanted pin near (45, 45) is tight, so the robot may brush

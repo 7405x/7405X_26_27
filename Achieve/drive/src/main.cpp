@@ -1,18 +1,19 @@
 // 7405X - RECF Achieve (Pinnacle) drivetrain code
-// 6-motor tank drive (3 per side) + inertial sensor.
+// 6-motor drive (3 per side) + inertial sensor + single bar lift + claw.
 
 #include "vex.h"
 #include "robot-config.h"
 #include "drive.h"
 #include "autons.h"
-#include "arm.h"
+#include "lift.h"
+#include "claw.h"
 
 // Runs once when the program starts, before the match begins.
 void pre_auton() {
   // Warn if a cable is loose before the match instead of finding out mid-match.
   char missing[32];
   int unplugged = countUnpluggedMotors(missing, sizeof(missing));
-  if (unplugged > 0 || !IMU.installed() || !arm.installed()) {
+  if (unplugged > 0 || !IMU.installed() || !lift.installed() || !claw.installed()) {
     Brain.Screen.clearScreen();
     Brain.Screen.setPenColor(red);
     Brain.Screen.setCursor(1, 1);
@@ -22,7 +23,9 @@ void pre_auton() {
     Brain.Screen.setCursor(3, 1);
     if (!IMU.installed()) Brain.Screen.print("IMU not found - auton turns won't work");
     Brain.Screen.setCursor(4, 1);
-    if (!arm.installed()) Brain.Screen.print("Arm motor (port 16) not found");
+    if (!lift.installed()) Brain.Screen.print("Lift motor (port 16) not found");
+    Brain.Screen.setCursor(5, 1);
+    if (!claw.installed()) Brain.Screen.print("Claw motor (port 17) not found");
     Brain.Screen.setPenColor(white);
     Controller1.rumble("---");
     wait(3, sec);
@@ -36,7 +39,8 @@ void pre_auton() {
   waitUntil(!IMU.isCalibrating());
 
   resetDriveEncoders();
-  armReset();  // the arm must be resting DOWN when the program starts
+  liftReset();  // the lift must be resting DOWN when the program starts
+  clawReset();  // the claw must be fully OPEN when the program starts
   static task odom(odometryTask);
   runAutonSelector();
 }
@@ -57,7 +61,8 @@ int controllerDisplayTask() {
     Controller1.Screen.print("%s %s", isSlowMode() ? "SLOW" : "FAST",
                              isHoldMode() ? "HOLD" : "COAST");
     Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print("Arm: %.0f deg", armPosition());
+    Controller1.Screen.print("Lift %.0f  Claw %s", liftPosition(),
+                             clawIsClosed() ? "SHUT" : "OPEN");
     // The controller screen is slow; updating too often causes lag.
     wait(500, msec);
   }
@@ -85,7 +90,8 @@ void usercontrol() {
 
   while (true) {
     driverControlStep();
-    armControlStep();
+    liftControlStep();
+    clawControlStep();
 
     // Buzz once when it's time to head back to the loader to park.
     // (In Solo Driving there is no parking bonus - just ignore the buzz.)

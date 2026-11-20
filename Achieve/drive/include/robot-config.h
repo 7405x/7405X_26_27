@@ -18,13 +18,20 @@
 
 #define IMU_PORT PORT10
 
-// Arm motor (rotates the arm that scoops and scores).
-#define ARM_PORT PORT16
-// Cartridge in the arm motor. Arms usually use green (ratio18_1) or red
+// Single bar lift motor (swings the bar up and down).
+#define LIFT_PORT PORT16
+// Cartridge in the lift motor. Lifts usually use green (ratio18_1) or red
 // (ratio36_1) for more torque. CHECK the cap color on the motor.
-#define ARM_CARTRIDGE ratio18_1
-// Flip this if pressing R1 (arm up) makes the arm go down.
-const bool ARM_REVERSED = false;
+#define LIFT_CARTRIDGE ratio18_1
+// Flip this if pressing R1 (lift up) makes the lift go down.
+const bool LIFT_REVERSED = false;
+
+// Claw motor (opens/closes to grab pins and cups).
+#define CLAW_PORT PORT17
+// CHECK the cap color. Green (ratio18_1) is a common choice for claws.
+#define CLAW_CARTRIDGE ratio18_1
+// Flip this if pressing L2 to close makes the claw open instead.
+const bool CLAW_REVERSED = false;
 
 // ---------------- Drive geometry ----------------
 // Cartridge inside the motors: ratio6_1 = blue (600rpm),
@@ -57,4 +64,5 @@ extern motor rightFront, rightMiddle, rightBack;
 extern motor_group leftDrive;
 extern motor_group rightDrive;
 extern inertial IMU;
-extern motor arm;
+extern motor lift;
+extern motor claw;

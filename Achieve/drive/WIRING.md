@@ -15,16 +15,18 @@ Plug each device into the port number listed. These match `include/robot-config.
 | 5 | Motor: left middle | Left side, middle | No |
 | 6 | Motor: left front | Left side, front | No |
 | 10 | Inertial sensor (IMU) | See below | - |
-| 16 | Motor: arm | Rotates the arm | No (flip `ARM_REVERSED` if R1 moves it down) |
+| 16 | Motor: single bar lift | Swings the lift bar | No (flip `LIFT_REVERSED` if R1 moves it down) |
+| 17 | Motor: claw | Opens/closes the claw | No (flip `CLAW_REVERSED` if L2 opens it instead of closing) |
 | Any free port | Radio | See below | - |
 
-Ports 7–9, 11–15 and 17–21 are free.
+Ports 7–9, 11–15 and 18–21 are free.
 
-**Motor power:** 7 × 11W = 77W of the 99W limit.
+**Motor power:** 8 × 11W = 88W of the 99W limit.
 
-## Arm
-- **Start every program with the arm resting all the way down.** The code treats wherever the arm is at startup as "down" (0°).
-- Check the cartridge color on the arm motor and set `ARM_CARTRIDGE` in `include/robot-config.h` (currently guessed green, `ratio18_1`).
+## Lift and claw
+- **Start every program with the lift resting all the way down and the claw fully open.** The code treats those startup positions as 0°.
+- Check the cartridge color on the lift and claw motors and set `LIFT_CARTRIDGE` / `CLAW_CARTRIDGE` in `include/robot-config.h` (both currently guessed green, `ratio18_1`).
+- If the claw drops pieces, raise `CLAW_GRIP_TORQUE` in `include/claw.h`. If the claw motor gets hot while holding, lower it.
 
 ## Inertial sensor (IMU)
 - Mount it **flat** (level with the floor) and as close to the middle of the robot as you can.

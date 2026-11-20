@@ -1,6 +1,6 @@
 # 7405X Achieve Drive
 
-V5 C++ project for the VEX VS Code extension. It runs a 6-motor drivetrain (3 motors per side), driven with split arcade controls, and uses an inertial sensor.
+V5 C++ project for the VEX VS Code extension. It runs a 6-motor drivetrain (3 motors per side) with split arcade controls, an inertial sensor, a single bar lift and a motor claw.
 
 ## Before the first run
 1. Open `include/robot-config.h` and set the motor ports, IMU port, cartridge, wheel size and gear ratio.
@@ -13,23 +13,28 @@ V5 C++ project for the VEX VS Code extension. It runs a 6-motor drivetrain (3 mo
 | `src/main.cpp` | Competition setup: pre-auton, autonomous and driver control |
 | `src/drive.cpp` | Driver control plus PID `driveDistance` / `turnToHeading` |
 | `src/autons.cpp` | Auton routines and the brain-screen selector |
-| `src/arm.cpp` | Arm control (R1/R2) and `armTo()` for autons |
-| `include/arm.h` | Arm positions (down / carry / score) to measure and fill in |
+| `src/lift.cpp` | Single bar lift control (R1/R2) and `liftTo()` for autons |
+| `include/lift.h` | Lift positions (down / carry / score) to measure and fill in |
+| `src/claw.cpp` | Claw control (L2) and `clawOpen()` / `clawClose()` for autons |
+| `include/claw.h` | Claw grip strength |
 | `include/robot-config.h` | Ports and robot measurements |
 
 ## Driver controls
+Full driver guide (buttons, buzzes, controller screen, pre-match checklist): [DRIVER.md](DRIVER.md). Port assignments: [WIRING.md](WIRING.md).
+
 | Control | Does |
 |---|---|
 | Left stick up/down | Drive forward / backward |
 | Right stick left/right | Turn |
-| R1 (hold) | Arm up |
-| R2 (hold) | Arm down |
+| R1 (hold) | Lift up |
+| R2 (hold) | Lift down |
+| L2 | Claw open / close (toggle) |
 | L1 | Slow mode on/off (40% speed, for lining up) |
 | X | Hold mode on/off (wheels lock when sticks are released, hard to push) |
 
 The controller screen shows battery %, hottest drive motor temperature, and the current modes. V5 motors lose power above about 55°C.
 The controller buzzes 15 seconds before the end of an alliance match. That's the cue to drive back to your alliance loader: a robot touching it when the match ends scores 21 points.
-At startup the brain checks that all 6 motors and the IMU are plugged in, and shows a red warning if one isn't.
+At startup the brain checks that all 8 motors and the IMU are plugged in, and shows a red warning if one isn't.
 
 ## Picking an auton
 Tap the brain screen to cycle through the options while the robot is disabled (before the match starts). The selected one also shows on the controller. The selection starts on **None**, so the robot stays still if nobody picks one. Taps are ignored while the robot is enabled, so bumping the screen mid-match does nothing.
